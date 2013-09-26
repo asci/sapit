@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test</title>
+    <script lang="javascript" src="./jquery-1.10.1.min.js"></script>
+    <script lang="javascript" src="./vow.min.js"></script>
+    <script lang="javascript" src="./sapit.js"></script>
+    <script lang="javascript">
+        $(document).ready(function () {
+            var conds = sapit.conds;
+            // Handle passed tests
+            sapit.on(sapit.PASSED, function (e, data) {
+                $('body').append('<hr />PASSED ' + data.group + ' - ' + data.title + ' (' + data.time + ' ms)')
+            });
+
+            // Handle failed tests
+            sapit.on(sapit.FAILED, function (e, data) {
+                $('body').append('<hr />FAILED ' + data.group + ' - ' + data.title + '<br/>' + data.reason)
+            });
+
+            // One test
+            sapit.test('Simple', 'Should return 404 status', '/v1/error', 'get', {}, null, conds.propertyShouldBeEqual('status', 404));
+
+            // Serial tests
+            sapit.test('Entity', 'Create test entity', '/v1/test', 'post', {title: 'Test1'}, conds.propertyShouldBeEqual('title', 'Test1'))
+            .then(function (test) {
+                return sapit.test('Entity', 'Getting test entity', '/v1/test/' + test.id, 'get', {}, conds.propertyShouldBeEqual('title', 'Test1'));
+            })
+            .then(function (test) {
+                return sapit.test('Entity', 'Update test entity', '/v1/test/' + test.id, 'put', {title: 'New title'}, conds.propertyShouldBeEqual('title', 'New title'));
+            })
+            .then(function (test) {
+                return sapit.test('Entity', 'Delete test entity', '/v1/test/' + test.id, 'delete', {}, conds.propertyShouldBeEqual('status', 'ok'));
+            })
+        });
+    </script>
+    </head>
+<body>
+
+</body>
+</html>
