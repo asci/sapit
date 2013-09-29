@@ -1,7 +1,7 @@
 sapit
 =====
 #####Sapit is a library for testing servers API via http protocol in browser. 
-It have 2 dependencies:
+It has 2 dependencies:
 
 
 * jQuery for requests to server, you can download it here http://jquery.com/download/
@@ -43,14 +43,19 @@ Also, `sapit.conds` provides some test function.
 
 ### Arguments
 You can pass arguments directly:
-    `sapit.test('User', 'Delete user', '/somewhere/user' + test.id, method: 'delete', null, function (resp) {return resp.status === 'ok'});`
+    `sapit.test('User', 'Delete user', '/somewhere/user' + test.id, method: 'delete', null, function (resp) {
+      return resp.status === 'ok'
+    });`
 
 ### Helpers
 
 `sapit.conds` contains some functions which return context-free testing functions
 
-    sapit.conds.propertyShouldBeEqual('name', 'John') // Returns functions which return true if testing object have `name` property and it equals to 'John'
-    sapit.conds.equalValuesForKeys(['name', 'age'], {name: 'John', age: 21}) // Returns function which return true if if all keys values (from test object) in first argument are equals to second object keys values. Or, if you pass only one argument and it is object - returns true if all keys values from test and passed objects are equals
+    // Returns functions which return true if testing object have `name` property and it equals to 'John'
+    sapit.conds.propertyShouldBeEqual('name', 'John')
+    // Returns function which return true if if all keys values (from test object) in first argument are equals to second object keys values. 
+    // Or, if you pass only one argument and it is object - returns true if all keys values from test and passed objects are equals
+    sapit.conds.equalValuesForKeys(['name', 'age'], {name: 'John', age: 21}) 
 
 Object testing are not deep, so you can't equal objects or arrays as properties
 
@@ -62,6 +67,7 @@ Sapit fire 3 events:
 * when test failed - `sapit.FAILED`
 
 So, you can add handlers for these events in this way:
+
     sapit.on(sapit.PENDING, function (e, data) {
       data.id // unique test id
     })
