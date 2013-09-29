@@ -22,7 +22,14 @@
             sapit.test('Simple', 'Should return 404 status', '/v1/error', 'get', {}, null, conds.propertyShouldBeEqual('status', 404));
 
             // Serial tests
-            sapit.test('Entity', 'Create test entity', '/v1/test', 'post', {title: 'Test1'}, conds.propertyShouldBeEqual('title', 'Test1'))
+            sapit.test({
+                    group: 'Entity',
+                    title: 'Create test entity',
+                    url: '/v1/test',
+                    method: 'post',
+                    params: {title: 'Test1'},
+                    successTest: conds.propertyShouldBeEqual('title', 'Test1')
+            })
             .then(function (test) {
                 return sapit.test('Entity', 'Getting test entity', '/v1/test/' + test.id, 'get', {}, conds.propertyShouldBeEqual('title', 'Test1'));
             })

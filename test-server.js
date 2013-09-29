@@ -1,7 +1,6 @@
 var http = require('http'),
+  fs = require('fs'),
   qs = require('querystring'),
-  st = require('node-static'),
-  fileserver = new st.Server('./public'),
   test = {};
 
 var route = function (req, res) {
@@ -51,7 +50,13 @@ var handleRequest = function (req, res) {
       route(req, res);
     } else {
       //Serve file queries
-      fileserver.serve(req, res);
+      fs.readFile('./public/' + req.url, function (err, file) {
+        if (err) {
+          res.statusCode = 404;
+          return res.end('Unhandled route');
+        }
+        res.end(file);
+      })
     }
   }
 };

@@ -97,11 +97,11 @@
     },
     /**
      *
-     * @param {String} group - name of tests group
-     * @param {String} title for test
-     * @param {String} url for request
-     * @param {String} method for request: 'get', 'post', 'put', 'delete'
-     * @param {Object} params that will send to server
+     * @param {String|Object} group - name of tests group
+     * @param {String} [title] for test
+     * @param {String} [url] for request
+     * @param {String} [method] for request: 'get', 'post', 'put', 'delete'
+     * @param {Object} [params] that will send to server
      * @param {Function} [successTest] - boolean-typed function to test successful response]
      * @param {Function} [errorTest] - boolean-typed function to test error response]
      * @returns {Promise}
@@ -122,6 +122,9 @@
         errorTest = group.errorTest;
         group = group.group;
       }
+
+      method = method || 'get';
+      group = group || 'Common';
 
       index = this._addPending(group, title);
 
@@ -173,10 +176,21 @@
        * Returns test function that receive response object and equals it with etalon object by defined keys
        * Fail if any of defined properties are unequal
        * @param {Array} keys like ['width', 'height', 'id']
-       * @param {Object} etalon object
+       * @param {Object|Array} etalon values
        * @returns {Function}
        */
       equalValuesForKeys: function (keys, etalon) {
+        if (arguments.length === 1) {
+          etalon = keys;
+          keys = Object.keys(keys);
+        }
+        if (Array.isArray(etalon)) {
+          return function (testObj) {
+            return !keys.some(function (key, ind) {
+              return etalon[ind] !== testObj[key];
+            })
+          }
+        }
         return function (testObj) {
           return !keys.some(function (key) {
             return etalon[key] !== testObj[key];
