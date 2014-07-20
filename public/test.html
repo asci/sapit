@@ -2,21 +2,112 @@
 <html>
 <head>
     <title>Test</title>
+    <style type="text/css">
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: "Helvetica Neue Light", sans-serif;
+            padding: 10px;
+        }
+        .test-group {
+            margin-bottom: 10px;
+        }
+        .test-group h3 {
+            font-size: 17px;
+            font-weight: lighter;
+            background: grey;
+            padding: 2px;
+            color: white;
+        }
+        .test-group li {
+            font-size: 15px;
+            border-bottom: solid 1px #aaa;
+        }
+        .test-group p {
+            font-size: 11px;
+        }
+        .test-group sup {
+            font-size: 10px;
+        }
+        .bad {
+            color: red;
+        }
+        .pending {
+            color: dimgray;
+        }
+        .good {
+            color: forestgreen;
+        }
+    </style>
     <script lang="javascript" src="./jquery-1.10.1.min.js"></script>
     <script lang="javascript" src="./vow.min.js"></script>
     <script lang="javascript" src="./sapit.js"></script>
     <script lang="javascript">
+        /**
+         * Get group anchor to insert html for each test
+         * @param {String} title - group title
+         * @returns {jQuery}
+         */
+        function getGroup(title) {
+            var query = '.' + title;
+            var group = $(query);
+            var body = $('body');
+            if (!group.length) {
+                var str = '<div class="test-group ' + title + '"><h3>' + title + '</h3><ul></ul></div>';
+                body.append(str);
+                group = $(query);
+            }
+            return group.find('ul');
+        }
+        /**
+         * Get test html anchor to replace current status of test
+         * @param {Number|String} id - test id
+         * @param {String} group - group title
+         * @returns {jQuery}
+         */
+        function getTest(id, group) {
+            var query = '#test-' + id;
+            var $test = $(query);
+            if ($test.length) {
+                return $test;
+            }
+            var $group = getGroup(group);
+            $group.append('<li id="test-' + id + '"></li>');
+            return $(query);
+
+        }
+
+        // Handle passed tests
+        sapit.on(sapit.PASSED, function (e, data) {
+            getTest(data.id, data.group)
+                .html('<p class="good">' + data.title + ' (' + data.time + ' ms)</p>');
+        });
+
+        sapit.on(sapit.PENDING, function (e, data) {
+            getTest(data.id, data.group)
+                .html('<p class="pending">' + data.title + '</p>');
+        });
+
+        // Handle failed tests
+        sapit.on(sapit.FAILED, function (e, data) {
+            getTest(data.id, data.group)
+                .html('<p class="bad">' + data.title + '<sup>' + data.reason + '</sup></p>');
+        });
+
+        // Add custom header
+        sapit.beforeRequest(function (xhr) {
+            xhr.setRequestHeader('x-user-token', Math.random().toString(35).substr(2, 30));
+        });
+
+        // Add custom params
+        sapit.beforeRequest(function (xhr, params) {
+            params.data += '&secret=k345hjs345djh56sk6j2ks626jhdf6kjhs';
+        });
+
         $(document).ready(function () {
             var conds = sapit.conds;
-            // Handle passed tests
-            sapit.on(sapit.PASSED, function (e, data) {
-                $('body').append('<hr />PASSED ' + data.group + ' - ' + data.title + ' (' + data.time + ' ms)')
-            });
-
-            // Handle failed tests
-            sapit.on(sapit.FAILED, function (e, data) {
-                $('body').append('<hr />FAILED ' + data.group + ' - ' + data.title + '<br/>' + data.reason)
-            });
 
             // One test
             sapit.test('Simple', 'Should return 404 status', '/v1/error', 'get', {}, null, conds.propertyShouldBeEqual('status', 404));
