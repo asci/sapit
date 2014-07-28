@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <title>SAPIT testing system</title>
+    <style type="text/css">
+        .params {margin-left: 30px;}
+        .row {margin: 5px;clear: both;}
+    </style>
+    <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <link href="http://getbootstrap.com/2.3.2/assets/css/bootstrap.css" rel="stylesheet">
+    <script src="/dev/vow.js"></script> <!-- @todo: FIX THIS PATH! -->
+    <script src="/dev/sapit.js"></script> <!-- @todo: FIX THIS PATH! -->
+</head>
+<body class="container">
+<script lang="javascript">
+$(document).ready(function () {
+    var token,
+        baseUrl = document.location.protocol + '//' + document.location.host + '/api/',
+        group = 'projectName',
+        method = 'post',
+        fixtures = {
+            // test user for getting token
+            testUser: {
+                email: "account@projectname.com",
+                password: "somePassword",
+                phone: "380501234567"
+            },
+            testData: {
+                test1: "1C3ALB6R26N186864",
+                test2: "1FALP62W4WH128703",
+                test3: "2T1KR32E94C272437",
+                test4: "3N1FCAC11UK558246",
+                test5: "3N1FCAC11UL444262"
+            },
+        };
+
+    /**
+    * For interacting with sample API we have to get token first
+    */
+    function getToken() {
+        return sapit.test({
+            group: group,
+            title: '.login',
+            url: baseUrl,
+            method: method,
+            params: {
+                action: 'login',
+                email: fixtures.testUser.email,
+                password: fixtures.testUser.password
+            },
+            successTest: function () {
+                return true;
+            }
+        });
+    }
+
+    /**
+    * Since we got token -- we can provide other tests
+    */
+    getToken().then(function (loginResponse) {
+        token = loginResponse.token;
+
+        /**
+         * Extension of Sapit library.
+         * Consists some wrappers of standard methods and some utility methods.
+         * This method was made to get other testing methods more short and clear
+         */
+        var projectName = $.extend(sapit, {
+            testAction: function (action, params, successTest, failTest) {
+
+                // across all the actions we sending token and action
+                var predefinedParams = {action: action, token: token};
+
+                // attach other params
+                for (var attributeName in predefinedParams) {
+                    params[attributeName] = predefinedParams[attributeName];
+                }
+
+                // in output I would like to see sended params
+                var paramsToShow = JSON.parse(JSON.stringify(params));
+
+                // params without token and action (action we'll see in caption)
+                delete paramsToShow.token;
+                delete paramsToShow.action;
+
+                // let's run test itself
+                return sapit.test({
+                    group: group,
+                    title: action + ' <br> <code class="params">' + JSON.stringify(paramsToShow) + '</code>',
+                    url: baseUrl,
+                    method: method,
+                    params: params,
+                    successTest: successTest
+                });
+            }
+        });
+
+        /**
+         * Output
+         */
+        sapit.on(sapit.FAILED, function (status, data) {
+            $('body').append('<div class="row"><span class="label label-important">FAIL</span> ' + data.title + " — <code>" + data.reason + "</code></div>");
+        });
+        sapit.on(sapit.PASSED, function (status, data) {
+            $('body').append('<div class="row"><span class="label label-success">OK</span> ' + data.title + "</div>");
+        });
+
+        // #####################################################################
+        //                          TEST SECTION
+        // #####################################################################
+
+        // positive test
+        projectName.testAction('get.userdata.report.preview',
+            {"vin": fixtures.vin.test2},
+            function (res) {
+                if ((typeof res.vehicle == 'undefined')) return false;
+                return res.status == 1;
+            });
+        // test with second test data
+        projectName.testAction('get.userdata.report.preview',
+            {"vin": fixtures.vin.test2},
+            function (res) {
+                if ((typeof res.vehicle == 'undefined')) return false;
+                return res.status == 1;
+            });
+        // negative test
+        projectName.testAction('get.userdata.report.preview',
+            {"vin": 1111111111111},
+            function (res) {
+                if ((typeof res.vehicle != 'undefined')) return false;
+                return res.status == 0;
+            });
+
+        /**
+        * Few complex methods, dependend of each other
+        */
+        projectName.testAction('password.change',
+            {password: "newPass"},
+            function (res) {
+                return res.status == 1;
+            })
+            .then(function (test /* previous test response from server */) {
+                return projectName.testAction('password.change',
+                    {password: "access2014"},
+                    function (res) {
+                        return res.status == 1;
+                    });
+            });
+    })
+});
+</script>
+</body>
+</html>
