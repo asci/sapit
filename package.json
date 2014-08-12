@@ -10,7 +10,7 @@
   ],
   "name": "sapit",
   "description": "Minimalistic server API tester",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "repository": {
     "type": "git",
     "url": "http://github.com/asci/sapit.git"
@@ -19,5 +19,9 @@
   "readmeFilename": "README",
   "bugs": {
     "email": "asci@yandex.ua"
+  },
+  "dependencies": {
+    "q": "^1.0.1",
+    "request": "^2.39.0"
   }
 }

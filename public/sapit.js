@@ -99,6 +99,7 @@
             this.trigger(this.PENDING, {
                 group: group,
                 index: index,
+                title: title,
                 id:    this._ids
             });
 

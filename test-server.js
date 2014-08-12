@@ -4,7 +4,7 @@ var http = require('http'),
   test = {};
 
 var route = function (req, res) {
-  var url = req.url,
+  var url = req.url.split('?')[0],
     method = req.method.toLowerCase();
 
   if (url === '/v1/test' && method === 'post') {
@@ -41,7 +41,11 @@ var handleRequest = function (req, res) {
       body += data;
     });
     req.on('end', function () {
-      req.body = qs.parse(body);
+      if (req.headers['content-type'] !== 'application/json') {
+        req.body = qs.parse(body);
+      } else {
+        req.body = JSON.parse(body);
+      }
       route(req, res);
     });
   } else {
@@ -61,6 +65,7 @@ var handleRequest = function (req, res) {
   }
 };
 
-http.createServer(handleRequest).listen(8080, '127.0.0.1');
+http.createServer(handleRequest).listen(process.env.PORT, process.env.IP);
 
-console.log('Test page available http://127.0.0.1:8080/test.html');
+console.log('Server started');
+console.log('Test page available http://' + process.env.IP + ':' + process.env.PORT + '/test.html');
