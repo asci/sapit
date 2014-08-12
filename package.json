@@ -23,5 +23,12 @@
   "dependencies": {
     "q": "^1.0.1",
     "request": "^2.39.0"
+  },
+  "devDependencies": {
+    "grunt-jasmine-node": "^0.2.1",
+    "jasmine-node": "^1.14.5",
+    "nock": "^0.44.1",
+    "jasmine-reporters": "^2.0.3",
+    "grunt-jasmine-node-coverage": "^0.1.11"
   }
 }
